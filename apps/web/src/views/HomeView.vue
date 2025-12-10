@@ -30,7 +30,9 @@ const startPage = ref(1)
 const endPage = ref(1)
 
 const toggleLanguage = () => {
-    locale.value = locale.value === 'en' ? 'zh' : 'en'
+    const newLocale = locale.value === 'en' ? 'zh' : 'en'
+    locale.value = newLocale
+    localStorage.setItem('user-locale', newLocale)
 }
 
 const handleFileDropped = (f) => {
@@ -273,7 +275,7 @@ const startOver = () => {
                                         <div class="space-y-2 w-full">
                                             <div class="space-y-1">
                                                 <p class="font-medium leading-none">{{ $t('sidebar.modes.range.title')
-                                                    }}</p>
+                                                }}</p>
                                                 <p class="text-sm text-muted-foreground">{{
                                                     $t('sidebar.modes.range.desc') }}</p>
                                             </div>
@@ -300,7 +302,7 @@ const startOver = () => {
                                             <p class="font-medium leading-none">{{ $t('sidebar.modes.select.title') }}
                                             </p>
                                             <p class="text-sm text-muted-foreground">{{ $t('sidebar.modes.select.desc')
-                                                }}</p>
+                                            }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -359,12 +361,12 @@ const startOver = () => {
                             <button @click="downloadResult"
                                 class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-2">
                                 <Download class="w-4 h-4" /> {{ mergePages ? $t('result.downloadPdf') :
-                                $t('result.downloadZip') }}
+                                    $t('result.downloadZip') }}
                             </button>
                             <button @click="startOver"
                                 class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-8 border border-input bg-background hover:bg-accent hover:text-accent-foreground gap-2">
                                 <RefreshCw class="w-4 h-4" /> {{ mergePages ? $t('result.startOver') :
-                                $t('result.splitAgain') }}
+                                    $t('result.splitAgain') }}
                             </button>
                         </div>
                     </div>

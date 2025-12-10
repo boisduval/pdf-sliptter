@@ -122,8 +122,8 @@ const messages = {
 
 const i18n = createI18n({
   legacy: false, // Usage with Composition API
-  locale: 'en', // default locale
-  fallbackLocale: 'en',
+  locale: localStorage.getItem('user-locale') || 'zh', // default locale
+  fallbackLocale: 'zh',
   messages
 })
 
