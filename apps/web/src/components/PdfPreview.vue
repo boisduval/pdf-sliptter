@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, watch, ref, nextTick } from 'vue'
+import { onMounted, watch, ref, shallowRef, nextTick } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
 
 import pdfWorker from 'pdfjs-dist/build/pdf.worker?url'
