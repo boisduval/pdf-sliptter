@@ -1,5 +1,8 @@
 # 📄 PDF Splitter
 
+[English](./README.md) | [简体中文](./README_zh-CN.md)
+
+
 A premium, privacy-focused web application for splitting PDF files, built with a modern stack. Process your sensitive documents entirely in your browser without uploading them to any server.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
