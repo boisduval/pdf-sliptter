@@ -267,10 +267,10 @@ const startOver = () => {
                             </h3>
 
                             <div class="flex-grow flex items-center justify-center w-full">
-                                <div v-if="splitMode !== 'select'" class="w-full flex justify-center">
+                                <div v-show="splitMode !== 'select'" class="w-full flex justify-center">
                                     <PdfPreview v-if="file" :file="file" :start-page="startPage" :end-page="endPage" />
                                 </div>
-                                <div v-else class="w-full h-full flex flex-col">
+                                <div v-show="splitMode === 'select'" class="w-full h-full flex flex-col">
                                     <PageGrid v-if="file" :file="file" v-model="selectedPages" class="flex-grow" />
                                 </div>
                             </div>
