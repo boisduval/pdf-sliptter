@@ -1,14 +1,17 @@
 <script setup>
 import { ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { PDFDocument } from 'pdf-lib'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
-import { FileText, Download, RefreshCw, Scissors, Check, Settings2, LayoutGrid, List } from 'lucide-vue-next'
+import { FileText, Download, RefreshCw, Scissors, Check, Settings2, LayoutGrid, List, Globe } from 'lucide-vue-next'
 import DropZone from '../components/DropZone.vue'
 import FileInfo from '../components/FileInfo.vue'
 import ProgressBar from '../components/ProgressBar.vue'
 import PdfPreview from '../components/PdfPreview.vue'
 import PageGrid from '../components/PageGrid.vue'
+
+const { t, locale } = useI18n()
 
 const file = ref(null)
 const splitMode = ref('all') // 'all' | 'range' | 'select'
@@ -25,6 +28,10 @@ const totalPages = ref(0)
 // Preview pages
 const startPage = ref(1)
 const endPage = ref(1)
+
+const toggleLanguage = () => {
+    locale.value = locale.value === 'en' ? 'zh' : 'en'
+}
 
 const handleFileDropped = (f) => {
     file.value = f
@@ -132,7 +139,7 @@ const processPDF = async () => {
 
         if (mergePages.value) {
             // MERGE MODE
-            progressText.value = 'Merging pages...'
+            progressText.value = t('process.merging')
             const mergedPdf = await PDFDocument.create()
             const pageIndices = targetPages.map(p => p - 1)
 
@@ -141,7 +148,7 @@ const processPDF = async () => {
             copiedPages.forEach(page => mergedPdf.addPage(page))
 
             progress.value = 100
-            progressText.value = 'Finalizing PDF...'
+            progressText.value = t('process.finalizingPdf')
             const pdfBytes = await mergedPdf.save()
             resultFile.value = new Blob([pdfBytes], { type: 'application/pdf' })
 
@@ -154,7 +161,7 @@ const processPDF = async () => {
                 const pageNum = targetPages[i]
                 const pageIndex = pageNum - 1
                 progress.value = Math.round(((i + 1) / totalProcessing) * 100)
-                progressText.value = `Processing page ${pageNum} (${i + 1}/${totalProcessing})...`
+                progressText.value = t('process.processingPage', { page: pageNum, current: i + 1, total: totalProcessing })
 
                 const newPdf = await PDFDocument.create()
                 const [copiedPage] = await newPdf.copyPages(pdfDoc, [pageIndex])
@@ -167,7 +174,7 @@ const processPDF = async () => {
                 // Allow UI update
                 await new Promise(resolve => setTimeout(resolve, 0))
             }
-            progressText.value = 'Finalizing ZIP file...'
+            progressText.value = t('process.finalizingZip')
             resultFile.value = await zip.generateAsync({ type: 'blob' })
         }
 
@@ -200,10 +207,18 @@ const startOver = () => {
 <template>
     <div
         class="min-h-screen bg-background text-foreground flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8 transition-all duration-300">
-        <header class="text-center mb-12 animate-fade-in-down max-w-2xl">
-            <h1 class="text-4xl font-extrabold tracking-tight lg:text-5xl mb-4">PDF Splitter</h1>
-            <p class="text-muted-foreground text-lg">Instantly separate your PDF into individual pages with privacy and
-                ease.</p>
+        <!-- Lang Switcher -->
+        <div class="absolute top-4 right-4 z-50">
+            <button @click="toggleLanguage"
+                class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted hover:bg-muted/80 text-sm font-medium transition-colors border shadow-sm">
+                <Globe class="w-4 h-4" />
+                {{ locale === 'en' ? 'English' : '中文' }}
+            </button>
+        </div>
+
+        <header class="text-center mb-12 animate-fade-in-down max-w-2xl px-4">
+            <h1 class="text-4xl font-extrabold tracking-tight lg:text-5xl mb-4">{{ $t('app.title') }}</h1>
+            <p class="text-muted-foreground text-lg">{{ $t('app.subtitle') }}</p>
         </header>
 
         <main class="w-full relative" :class="[file ? 'max-w-7xl' : 'max-w-xl']">
@@ -226,7 +241,7 @@ const startOver = () => {
                             <div class="space-y-4">
                                 <div class="flex items-center gap-2 pb-2 border-b">
                                     <Settings2 class="w-5 h-5 text-primary" />
-                                    <h3 class="font-semibold text-lg">Split Mode</h3>
+                                    <h3 class="font-semibold text-lg">{{ $t('sidebar.splitMode') }}</h3>
                                 </div>
 
                                 <div class="grid gap-4">
@@ -240,9 +255,9 @@ const startOver = () => {
                                                 :class="splitMode === 'all' ? 'text-primary' : 'text-muted-foreground'" />
                                         </div>
                                         <div class="space-y-1">
-                                            <p class="font-medium leading-none">All Pages</p>
-                                            <p class="text-sm text-muted-foreground">Extract every single page into a
-                                                separate file.</p>
+                                            <p class="font-medium leading-none">{{ $t('sidebar.modes.all.title') }}</p>
+                                            <p class="text-sm text-muted-foreground">{{ $t('sidebar.modes.all.desc') }}
+                                            </p>
                                         </div>
                                     </div>
 
@@ -257,13 +272,15 @@ const startOver = () => {
                                         </div>
                                         <div class="space-y-2 w-full">
                                             <div class="space-y-1">
-                                                <p class="font-medium leading-none">Custom Range</p>
-                                                <p class="text-sm text-muted-foreground">Extract specific ranges (e.g.
-                                                    1-5, 8).</p>
+                                                <p class="font-medium leading-none">{{ $t('sidebar.modes.range.title')
+                                                    }}</p>
+                                                <p class="text-sm text-muted-foreground">{{
+                                                    $t('sidebar.modes.range.desc') }}</p>
                                             </div>
                                             <div v-if="splitMode === 'range'"
                                                 class="animate-accordion-down overflow-hidden">
-                                                <input v-model="rangeInput" type="text" placeholder="e.g. 1-5, 8, 11-13"
+                                                <input v-model="rangeInput" type="text"
+                                                    :placeholder="$t('sidebar.rangePlaceholder')"
                                                     class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                                     @click.stop />
                                             </div>
@@ -280,9 +297,10 @@ const startOver = () => {
                                                 :class="splitMode === 'select' ? 'text-primary' : 'text-muted-foreground'" />
                                         </div>
                                         <div class="space-y-1">
-                                            <p class="font-medium leading-none">Select Manually</p>
-                                            <p class="text-sm text-muted-foreground">Pick pages visually from the grid.
+                                            <p class="font-medium leading-none">{{ $t('sidebar.modes.select.title') }}
                                             </p>
+                                            <p class="text-sm text-muted-foreground">{{ $t('sidebar.modes.select.desc')
+                                                }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -293,13 +311,13 @@ const startOver = () => {
                                     class="rounded border-input bg-background/50 text-primary w-4 h-4 focus:ring-primary/20 transition-all" />
                                 <label for="merge"
                                     class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground select-none cursor-pointer">
-                                    Merge selected pages into one PDF file
+                                    {{ $t('sidebar.mergeLabel') }}
                                 </label>
                             </div>
 
                             <button @click="processPDF"
                                 class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-11 px-8 w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4 shadow-md">
-                                {{ mergePages ? 'Merge & Download' : 'Split PDF' }}
+                                {{ mergePages ? $t('sidebar.mergeBtn') : $t('sidebar.splitBtn') }}
                             </button>
                         </div>
 
@@ -307,7 +325,7 @@ const startOver = () => {
                         <div class="lg:col-span-7 flex flex-col h-full bg-muted/30 rounded-xl border p-6 min-h-[500px]">
                             <h3
                                 class="font-semibold text-lg mb-6 flex items-center gap-2 text-muted-foreground uppercase tracking-wider text-xs">
-                                <FileText class="w-4 h-4" /> Preview
+                                <FileText class="w-4 h-4" /> {{ $t('preview.title') }}
                             </h3>
 
                             <div class="flex-grow flex items-center justify-center w-full">
@@ -332,20 +350,21 @@ const startOver = () => {
                             class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center mb-6">
                             <Check class="w-8 h-8" />
                         </div>
-                        <h3 class="text-2xl font-bold mb-2">Ready for Download!</h3>
+                        <h3 class="text-2xl font-bold mb-2">{{ $t('result.title') }}</h3>
                         <p class="text-muted-foreground mb-8">
-                            {{ mergePages ? 'Your PDF has been successfully created.' :
-                                'Your PDF pages have been successfully split.' }}
+                            {{ mergePages ? $t('result.successMerge') : $t('result.successSplit') }}
                         </p>
 
                         <div class="flex flex-col sm:flex-row gap-4">
                             <button @click="downloadResult"
                                 class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-2">
-                                <Download class="w-4 h-4" /> {{ mergePages ? 'Download PDF' : 'Download ZIP' }}
+                                <Download class="w-4 h-4" /> {{ mergePages ? $t('result.downloadPdf') :
+                                $t('result.downloadZip') }}
                             </button>
                             <button @click="startOver"
                                 class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-8 border border-input bg-background hover:bg-accent hover:text-accent-foreground gap-2">
-                                <RefreshCw class="w-4 h-4" /> Start Over
+                                <RefreshCw class="w-4 h-4" /> {{ mergePages ? $t('result.startOver') :
+                                $t('result.splitAgain') }}
                             </button>
                         </div>
                     </div>
@@ -353,8 +372,8 @@ const startOver = () => {
             </div>
         </main>
 
-        <footer class="mt-12 text-center text-sm text-muted-foreground">
-            <p>Private & Secure. Client-side processing.</p>
+        <footer class="mt-12 text-center text-sm text-muted-foreground px-4">
+            <p>{{ $t('app.footer') }}</p>
         </footer>
     </div>
 </template>

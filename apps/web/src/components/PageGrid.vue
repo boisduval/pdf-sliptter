@@ -1,6 +1,7 @@
 <script setup>
-import { ref, shallowRef, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
+import { ref, shallowRef, watch, nextTick, onBeforeUnmount } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
+import { useI18n } from 'vue-i18n'
 import { Check, ZoomIn, X } from 'lucide-vue-next'
 
 import pdfWorker from 'pdfjs-dist/build/pdf.worker?url'
@@ -8,6 +9,8 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker?url'
 // Worker src is already set globally in App or PdfPreview, but good to ensure.
 // We assume it's set or we set it again to be safe.
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker
+
+const { t } = useI18n()
 
 const props = defineProps({
     file: File,
@@ -166,10 +169,12 @@ onBeforeUnmount(() => {
 <template>
     <div class="mt-6 animate-fade-in" ref="containerRef">
         <div class="flex justify-between items-center mb-4 px-2">
-            <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Select Pages to Extract
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{{ t('preview.selectTitle')
+                }}
             </h3>
-            <span class="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{{ modelValue.length }}
-                selected</span>
+            <span class="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{{ t('preview.selected', {
+                n:
+                modelValue.length }) }}</span>
         </div>
 
         <div
@@ -212,7 +217,7 @@ onBeforeUnmount(() => {
                 <!-- Page Number -->
                 <span class="mt-2 text-xs font-medium transition-colors"
                     :class="isSelected(page.pageNum) ? 'text-primary' : 'text-muted-foreground'">
-                    Page {{ page.pageNum }}
+                    {{ page.pageNum }}
                 </span>
             </div>
         </div>

@@ -1,6 +1,9 @@
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { File as FileIcon, X } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 const props = defineProps({
   file: File,
@@ -31,7 +34,7 @@ const formattedSize = computed(() => {
     </div>
     <button v-if="canRemove" @click.stop="$emit('remove')"
       class="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-      title="Remove file">
+      :title="t('fileInfo.remove')">
       <X class="w-4 h-4" />
     </button>
   </div>

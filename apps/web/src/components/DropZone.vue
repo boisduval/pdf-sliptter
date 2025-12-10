@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { UploadCloud } from 'lucide-vue-next'
+
+const { t } = useI18n()
 
 const props = defineProps({
   modelValue: File
@@ -28,7 +31,7 @@ const handleFileSelect = (e) => {
 
 const emitFile = (file) => {
   if (file.type !== 'application/pdf') {
-    alert('Please upload a PDF file.')
+    alert(t('dropzone.alert'))
     return
   }
   emit('update:modelValue', file)
@@ -54,8 +57,8 @@ const triggerFileInput = () => {
     </div>
 
     <div class="space-y-1">
-      <h3 class="text-lg font-semibold tracking-tight">Drag & Drop your PDF here</h3>
-      <p class="text-sm text-muted-foreground">or click to browse your files</p>
+      <h3 class="text-lg font-semibold tracking-tight">{{ t('dropzone.dragText') }}</h3>
+      <p class="text-sm text-muted-foreground">{{ t('dropzone.clickText') }}</p>
     </div>
 
     <input ref="fileInput" type="file" accept=".pdf" class="hidden" @change="handleFileSelect"

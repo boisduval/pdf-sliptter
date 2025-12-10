@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, watch, ref, shallowRef, nextTick } from 'vue'
+import { useI18n } from 'vue-i18n'
 import * as pdfjsLib from 'pdfjs-dist'
 import { ZoomIn, X, ArrowRight } from 'lucide-vue-next'
 
@@ -7,6 +8,8 @@ import pdfWorker from 'pdfjs-dist/build/pdf.worker?url'
 
 // Set worker src dynamically
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker
+
+const { t } = useI18n()
 
 const props = defineProps({
   file: File,
@@ -86,7 +89,8 @@ defineExpose({
     class="flex items-center justify-center gap-8 mt-6 p-8 bg-background rounded-lg border border-border shadow-sm animate-fade-in">
     <!-- Start Page -->
     <div class="flex flex-col items-center gap-3">
-      <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Start Page</span>
+      <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{{ t('preview.startPage')
+        }}</span>
       <div @click="openPreview(startPage)"
         class="w-[120px] aspect-[1/1.4] bg-muted rounded-md overflow-hidden border border-input shadow-sm relative group cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
         title="Click to zoom">
@@ -106,7 +110,8 @@ defineExpose({
 
     <!-- End Page -->
     <div class="flex flex-col items-center gap-3">
-      <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">End Page</span>
+      <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{{ t('preview.endPage')
+        }}</span>
       <div @click="openPreview(endPage)"
         class="w-[120px] aspect-[1/1.4] bg-muted rounded-md overflow-hidden border border-input shadow-sm relative group cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
         title="Click to zoom">
