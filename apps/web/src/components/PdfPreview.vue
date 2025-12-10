@@ -66,7 +66,7 @@ const openPreview = async (pageNum) => {
   modalPageNum.value = pageNum
   showModal.value = true
   await nextTick()
-  await renderPage(pageNum, modalCanvas.value, 2.0)
+  await renderPage(pageNum, modalCanvas.value, 3.0)
 }
 
 const closeModal = () => {
@@ -123,18 +123,21 @@ defineExpose({
     <Teleport to="body">
       <Transition name="fade">
         <div v-if="showModal"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 md:p-8"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm p-4 md:p-8"
           @click="closeModal">
-          <div class="relative max-h-full max-w-full overflow-hidden flex flex-col items-center justify-center"
+          <div class="relative w-full h-full max-w-7xl flex flex-col items-center justify-center pointer-events-none"
             @click.stop>
-            <div class="absolute top-4 right-4 z-50">
+
+            <div class="absolute top-0 right-0 z-50 pointer-events-auto">
               <button @click="closeModal"
-                class="rounded-full bg-background/90 p-2 text-foreground hover:bg-muted transition-colors border shadow-sm">
-                <X class="w-5 h-5" />
+                class="rounded-full bg-background/50 hover:bg-background p-2 text-foreground transition-colors border shadow-sm backdrop-blur-md">
+                <X class="w-6 h-6" />
               </button>
             </div>
-            <div class="bg-card p-2 rounded-lg border shadow-lg overflow-auto max-h-[85vh] max-w-[90vw]">
-              <canvas ref="modalCanvas" class="max-w-full h-auto object-contain bg-white rounded"></canvas>
+
+            <div class="w-full h-full flex items-center justify-center overflow-auto p-4 pointer-events-auto">
+              <canvas ref="modalCanvas"
+                class="max-w-full max-h-full object-contain shadow-2xl rounded-lg bg-white"></canvas>
             </div>
           </div>
         </div>
