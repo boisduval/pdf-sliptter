@@ -14,10 +14,11 @@ const file = ref(null)
 const splitMode = ref('all') // 'all' | 'range' | 'select'
 const rangeInput = ref('')
 const selectedPages = ref([])
+const mergePages = ref(false) // New state for merge toggle
 const processing = ref(false)
 const progress = ref(0)
 const progressText = ref('')
-const resultZip = ref(null)
+const resultFile = ref(null) // Renamed from resultZip, can be Blob (zip) or Uint8Array (pdf)
 const showResult = ref(false)
 const totalPages = ref(0)
 
@@ -37,12 +38,13 @@ const removeFile = () => {
 
 const resetState = () => {
     showResult.value = false
-    resultZip.value = null
+    resultFile.value = null
     processing.value = false
     progress.value = 0
     rangeInput.value = ''
     selectedPages.value = []
     splitMode.value = 'all'
+    mergePages.value = false
 }
 
 watch(file, async (newFile) => {
@@ -108,11 +110,13 @@ const processPDF = async () => {
     if (!file.value) return
     processing.value = true
     showResult.value = false
+    resultFile.value = null
+
     try {
         const arrayBuffer = await file.value.arrayBuffer()
         const pdfDoc = await PDFDocument.load(arrayBuffer)
         const totalCount = pdfDoc.getPageCount()
-        const zip = new JSZip()
+
         let targetPages = []
         if (splitMode.value === 'range' && rangeInput.value) {
             targetPages = parsePageRange(rangeInput.value, totalCount)
@@ -123,23 +127,50 @@ const processPDF = async () => {
         } else {
             targetPages = Array.from({ length: totalCount }, (_, i) => i + 1)
         }
-        const baseName = file.value.name.replace('.pdf', '')
+
         const totalProcessing = targetPages.length
-        for (let i = 0; i < totalProcessing; i++) {
-            const pageNum = targetPages[i]
-            const pageIndex = pageNum - 1
-            progress.value = Math.round(((i + 1) / totalProcessing) * 100)
-            progressText.value = `Processing page ${pageNum} (${i + 1}/${totalProcessing})...`
-            const newPdf = await PDFDocument.create()
-            const [copiedPage] = await newPdf.copyPages(pdfDoc, [pageIndex])
-            newPdf.addPage(copiedPage)
-            const pdfBytes = await newPdf.save()
-            const paddedNum = pageNum.toString().padStart(Math.max(3, totalCount.toString().length), '0')
-            zip.file(`${baseName}_page_${paddedNum}.pdf`, pdfBytes)
-            await new Promise(resolve => setTimeout(resolve, 0))
+
+        if (mergePages.value) {
+            // MERGE MODE
+            progressText.value = 'Merging pages...'
+            const mergedPdf = await PDFDocument.create()
+            const pageIndices = targetPages.map(p => p - 1)
+
+            // Copy all pages at once (faster)
+            const copiedPages = await mergedPdf.copyPages(pdfDoc, pageIndices)
+            copiedPages.forEach(page => mergedPdf.addPage(page))
+
+            progress.value = 100
+            progressText.value = 'Finalizing PDF...'
+            const pdfBytes = await mergedPdf.save()
+            resultFile.value = new Blob([pdfBytes], { type: 'application/pdf' })
+
+        } else {
+            // SPLIT MODE (ZIP)
+            const zip = new JSZip()
+            const baseName = file.value.name.replace('.pdf', '')
+
+            for (let i = 0; i < totalProcessing; i++) {
+                const pageNum = targetPages[i]
+                const pageIndex = pageNum - 1
+                progress.value = Math.round(((i + 1) / totalProcessing) * 100)
+                progressText.value = `Processing page ${pageNum} (${i + 1}/${totalProcessing})...`
+
+                const newPdf = await PDFDocument.create()
+                const [copiedPage] = await newPdf.copyPages(pdfDoc, [pageIndex])
+                newPdf.addPage(copiedPage)
+
+                const pdfBytes = await newPdf.save()
+                const paddedNum = pageNum.toString().padStart(Math.max(3, totalCount.toString().length), '0')
+                zip.file(`${baseName}_page_${paddedNum}.pdf`, pdfBytes)
+
+                // Allow UI update
+                await new Promise(resolve => setTimeout(resolve, 0))
+            }
+            progressText.value = 'Finalizing ZIP file...'
+            resultFile.value = await zip.generateAsync({ type: 'blob' })
         }
-        progressText.value = 'Finalizing ZIP file...'
-        resultZip.value = await zip.generateAsync({ type: 'blob' })
+
         showResult.value = true
     } catch (err) {
         console.error(err)
@@ -149,16 +180,20 @@ const processPDF = async () => {
     }
 }
 
-const downloadZip = () => {
-    if (resultZip.value && file.value) {
-        const fileName = `${file.value.name.replace('.pdf', '')}_split.zip`
-        saveAs(resultZip.value, fileName)
+const downloadResult = () => {
+    if (resultFile.value && file.value) {
+        const baseName = file.value.name.replace('.pdf', '')
+        if (mergePages.value) {
+            saveAs(resultFile.value, `${baseName}_merged.pdf`)
+        } else {
+            saveAs(resultFile.value, `${baseName}_split.zip`)
+        }
     }
 }
 
 const startOver = () => {
     showResult.value = false
-    resultZip.value = null
+    resultFile.value = null
 }
 </script>
 
@@ -253,9 +288,18 @@ const startOver = () => {
                                 </div>
                             </div>
 
+                            <div class="flex items-center space-x-2 mt-4">
+                                <input type="checkbox" id="merge" v-model="mergePages"
+                                    class="rounded border-input bg-background/50 text-primary w-4 h-4 focus:ring-primary/20 transition-all" />
+                                <label for="merge"
+                                    class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-muted-foreground select-none cursor-pointer">
+                                    Merge selected pages into one PDF file
+                                </label>
+                            </div>
+
                             <button @click="processPDF"
                                 class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-11 px-8 w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4 shadow-md">
-                                Split PDF
+                                {{ mergePages ? 'Merge & Download' : 'Split PDF' }}
                             </button>
                         </div>
 
@@ -289,16 +333,19 @@ const startOver = () => {
                             <Check class="w-8 h-8" />
                         </div>
                         <h3 class="text-2xl font-bold mb-2">Ready for Download!</h3>
-                        <p class="text-muted-foreground mb-8">Your PDF pages have been successfully split.</p>
+                        <p class="text-muted-foreground mb-8">
+                            {{ mergePages ? 'Your PDF has been successfully created.' :
+                                'Your PDF pages have been successfully split.' }}
+                        </p>
 
                         <div class="flex flex-col sm:flex-row gap-4">
-                            <button @click="downloadZip"
+                            <button @click="downloadResult"
                                 class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-2">
-                                <Download class="w-4 h-4" /> Download ZIP
+                                <Download class="w-4 h-4" /> {{ mergePages ? 'Download PDF' : 'Download ZIP' }}
                             </button>
                             <button @click="startOver"
                                 class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-8 border border-input bg-background hover:bg-accent hover:text-accent-foreground gap-2">
-                                <RefreshCw class="w-4 h-4" /> Split Again
+                                <RefreshCw class="w-4 h-4" /> Start Over
                             </button>
                         </div>
                     </div>
