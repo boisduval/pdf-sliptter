@@ -19,9 +19,12 @@ A premium, privacy-focused web application for splitting PDF files, built with a
 - **✂️ Flexible Splitting**: 
   - Split all pages into individual files.
   - Define custom ranges (e.g., `1-5, 8, 11-13`).
+  - **✨ Manual Selection**: Visual grid to pick specific pages.
 - **👀 Live Preview**: 
-  - View thumbnails of start and end pages based on your range selection.
+  - **Grid View**: Preview all pages in a responsive grid.
+  - View thumbnails of start and end pages based on your range (in Custom Range mode).
   - **High-Res Zoom**: Click thumbnails to view full-screen high-quality previews.
+- **📱 Responsive Layout**: Optimized dual-column workspace for larger screens.
 - **📦 Auto-Zip**: Automatically packages split files into a downloadable `.zip` archive.
 
 ## 🛠️ Technology Stack

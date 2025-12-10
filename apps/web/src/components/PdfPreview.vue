@@ -14,7 +14,8 @@ const props = defineProps({
 const startCanvas = ref(null)
 const endCanvas = ref(null)
 const modalCanvas = ref(null)
-let pdfDoc = null
+const pdfDoc = shallowRef(null)
+
 
 const showModal = ref(false)
 const modalPageNum = ref(1)
@@ -23,14 +24,14 @@ const loadPdf = async () => {
   if (!props.file) return
   const arrayBuffer = await props.file.arrayBuffer()
   const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer })
-  pdfDoc = await loadingTask.promise
+  pdfDoc.value = await loadingTask.promise
   updatePreviews()
 }
 
 const renderPage = async (pageNum, canvas, qualityScale = 300) => {
-  if (!pdfDoc || !canvas || pageNum < 1 || pageNum > pdfDoc.numPages) return
+  if (!pdfDoc.value || !canvas || pageNum < 1 || pageNum > pdfDoc.value.numPages) return
 
-  const page = await pdfDoc.getPage(pageNum)
+  const page = await pdfDoc.value.getPage(pageNum)
   const viewport = page.getViewport({ scale: 1.0 })
 
   // Calculate scale based on desired width (qualityScale) or just use viewport if qualityScale is scale factor
@@ -57,7 +58,7 @@ const renderPage = async (pageNum, canvas, qualityScale = 300) => {
 }
 
 const updatePreviews = async () => {
-  if (!pdfDoc) return
+  if (!pdfDoc.value) return
   await renderPage(props.startPage, startCanvas.value, 300)
   await renderPage(props.endPage, endCanvas.value, 300)
 }
@@ -78,7 +79,7 @@ watch(() => props.file, loadPdf, { immediate: true })
 watch(() => [props.startPage, props.endPage], updatePreviews)
 
 defineExpose({
-  numPages: () => pdfDoc ? pdfDoc.numPages : 0
+  numPages: () => pdfDoc.value ? pdfDoc.value.numPages : 0
 })
 </script>
 
