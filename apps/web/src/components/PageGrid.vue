@@ -1,6 +1,7 @@
 <script setup>
 import { ref, shallowRef, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
+import { Check, ZoomIn, X } from 'lucide-vue-next'
 
 import pdfWorker from 'pdfjs-dist/build/pdf.worker?url'
 
@@ -165,8 +166,10 @@ onBeforeUnmount(() => {
 <template>
     <div class="mt-6 animate-fade-in" ref="containerRef">
         <div class="flex justify-between items-center mb-4 px-2">
-            <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Select Pages to Extract</h3>
-            <span class="text-xs text-slate-500">{{ modelValue.length }} selected</span>
+            <h3 class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Select Pages to Extract
+            </h3>
+            <span class="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">{{ modelValue.length }}
+                selected</span>
         </div>
 
         <div
@@ -174,48 +177,41 @@ onBeforeUnmount(() => {
             <div v-for="page in pages" :key="page.pageNum"
                 class="relative flex flex-col items-center group cursor-pointer" @click="togglePage(page.pageNum)">
                 <!-- Card -->
-                <div class="page-placeholder relative w-full aspect-[1/1.4] rounded-lg overflow-hidden border-2 transition-all duration-200 shadow-md bg-white/5"
+                <div class="page-placeholder relative w-full aspect-[1/1.4] rounded-lg overflow-hidden border-2 transition-all duration-200 shadow-sm bg-muted/20"
                     :class="[
                         isSelected(page.pageNum)
-                            ? 'border-purple-500 ring-2 ring-purple-500/20 scale-95'
-                            : 'border-transparent hover:border-white/20 hover:-translate-y-1'
+                            ? 'border-primary ring-2 ring-primary/20 scale-95'
+                            : 'border-transparent hover:border-primary/20 hover:-translate-y-1'
                     ]" :data-page="page.pageNum">
-                    <canvas :data-page="page.pageNum" class="w-full h-full object-contain"></canvas>
+                    <canvas :data-page="page.pageNum" class="w-full h-full object-contain bg-white"></canvas>
 
                     <!-- Loading State (if needed, visible before canvas renders) -->
                     <div v-if="!page.isRendered"
-                        class="absolute inset-0 flex items-center justify-center text-slate-600">
+                        class="absolute inset-0 flex items-center justify-center text-muted-foreground">
                         <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin">
                         </div>
                     </div>
 
                     <!-- Actions Overlay (Zoom icon) -->
                     <button @click.stop="openPreview(page.pageNum)"
-                        class="absolute top-2 right-2 w-7 h-7 bg-black/50 hover:bg-black/80 rounded-full flex items-center justify-center text-white/80 hover:text-white transition-all opacity-0 group-hover:opacity-100 z-10"
+                        class="absolute top-2 right-2 w-7 h-7 bg-background/80 hover:bg-background rounded-full flex items-center justify-center text-foreground transition-all opacity-0 group-hover:opacity-100 z-10 shadow-sm"
                         title="View Large">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor" class="w-4 h-4">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
-                        </svg>
+                        <ZoomIn class="w-4 h-4" />
                     </button>
 
                     <!-- Selection Overlay -->
                     <div class="absolute inset-0 transition-colors duration-200 flex items-center justify-center pointer-events-none"
-                        :class="isSelected(page.pageNum) ? 'bg-purple-500/20' : 'bg-transparent group-hover:bg-black/5'">
+                        :class="isSelected(page.pageNum) ? 'bg-primary/10' : 'bg-transparent group-hover:bg-black/5'">
                         <div v-if="isSelected(page.pageNum)"
-                            class="bg-purple-500 text-white rounded-full p-1 shadow-lg transform scale-100 transition-transform">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
-                                stroke="currentColor" class="w-4 h-4">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                            </svg>
+                            class="bg-primary text-primary-foreground rounded-full p-1 shadow-lg transform scale-100 transition-transform">
+                            <Check class="w-4 h-4" />
                         </div>
                     </div>
                 </div>
 
                 <!-- Page Number -->
                 <span class="mt-2 text-xs font-medium transition-colors"
-                    :class="isSelected(page.pageNum) ? 'text-purple-300' : 'text-slate-400'">
+                    :class="isSelected(page.pageNum) ? 'text-primary' : 'text-muted-foreground'">
                     Page {{ page.pageNum }}
                 </span>
             </div>
@@ -225,19 +221,20 @@ onBeforeUnmount(() => {
         <Teleport to="body">
             <Transition name="fade">
                 <div v-if="showModal"
-                    class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-8"
+                    class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 md:p-8"
                     @click="closeModal">
-                    <div class="relative max-h-full max-w-full overflow-auto bg-transparent flex items-center justify-center"
+                    <div class="relative max-h-full max-w-full overflow-hidden flex flex-col items-center justify-center"
                         @click.stop>
-                        <button @click="closeModal"
-                            class="absolute -top-12 right-0 md:fixed md:top-8 md:right-8 text-white/70 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all z-50">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                                stroke="currentColor" class="w-8 h-8">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                        <canvas ref="modalCanvas"
-                            class="rounded shadow-2xl max-w-full max-h-[90vh] object-contain bg-white"></canvas>
+                        <div class="absolute top-4 right-4 z-50">
+                            <button @click="closeModal"
+                                class="rounded-full bg-background/90 p-2 text-foreground hover:bg-muted transition-colors border shadow-sm">
+                                <X class="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div class="bg-card p-2 rounded-lg border shadow-lg overflow-auto max-h-[85vh] max-w-[90vw]">
+                            <canvas ref="modalCanvas"
+                                class="max-w-full h-auto object-contain bg-white rounded"></canvas>
+                        </div>
                     </div>
                 </div>
             </Transition>
@@ -261,16 +258,15 @@ onBeforeUnmount(() => {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.02);
-    border-radius: 4px;
+    background: transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: hsl(var(--muted-foreground) / 0.3);
     border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: hsl(var(--muted-foreground) / 0.5);
 }
 </style>

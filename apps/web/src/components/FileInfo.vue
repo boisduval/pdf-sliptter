@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue'
+import { File as FileIcon, X } from 'lucide-vue-next'
 
 const props = defineProps({
   file: File,
@@ -18,29 +19,37 @@ const formattedSize = computed(() => {
 </script>
 
 <template>
-  <div v-if="file" class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10 mb-6 animate-slide-down hover:bg-white/10 transition-colors cursor-pointer group">
-    <div class="flex flex-col overflow-hidden">
-      <span class="font-medium text-slate-200 truncate pr-4">{{ file.name }}</span>
-      <span class="text-xs text-slate-400">{{ formattedSize }}</span>
+  <div v-if="file" class="flex items-center justify-between p-4 bg-muted/40 rounded-lg border animate-slide-down group">
+    <div class="flex items-center gap-3 overflow-hidden">
+      <div class="p-2 bg-background rounded-md border shadow-sm">
+        <FileIcon class="w-5 h-5 text-primary" />
+      </div>
+      <div class="flex flex-col overflow-hidden">
+        <span class="font-medium truncate text-sm">{{ file.name }}</span>
+        <span class="text-xs text-muted-foreground">{{ formattedSize }}</span>
+      </div>
     </div>
-    <button 
-      v-if="canRemove"
-      @click.stop="$emit('remove')" 
-      class="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
-      title="Remove file"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-      </svg>
+    <button v-if="canRemove" @click.stop="$emit('remove')"
+      class="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+      title="Remove file">
+      <X class="w-4 h-4" />
     </button>
   </div>
 </template>
 
 <style scoped>
 @keyframes slide-down {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
 .animate-slide-down {
   animation: slide-down 0.3s ease-out;
 }

@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, watch, ref, shallowRef, nextTick } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
+import { ZoomIn, X, ArrowRight } from 'lucide-vue-next'
 
 import pdfWorker from 'pdfjs-dist/build/pdf.worker?url'
 
@@ -36,10 +37,6 @@ const renderPage = async (pageNum, canvas, qualityScale = 300) => {
   const page = await pdfDoc.value.getPage(pageNum)
   const viewport = page.getViewport({ scale: 1.0 })
 
-  // Calculate scale based on desired width (qualityScale) or just use viewport if qualityScale is scale factor
-  // Current logic treats qualityScale as target width for thumbnails.
-  // For modal, we might want actual scale factor or large width.
-
   let scale = 1.0
   if (qualityScale > 5) { // It's likely a target width
     scale = qualityScale / viewport.width
@@ -69,7 +66,6 @@ const openPreview = async (pageNum) => {
   modalPageNum.value = pageNum
   showModal.value = true
   await nextTick()
-  // Render high quality for modal (e.g. width 1000 or scale 2)
   await renderPage(pageNum, modalCanvas.value, 2.0)
 }
 
@@ -87,72 +83,59 @@ defineExpose({
 
 <template>
   <div
-    class="flex items-center justify-center gap-6 mt-8 p-6 bg-black/20 rounded-2xl border border-white/5 animate-fade-in">
+    class="flex items-center justify-center gap-8 mt-6 p-8 bg-background rounded-lg border border-border shadow-sm animate-fade-in">
     <!-- Start Page -->
-    <div class="flex flex-col items-center">
-      <span class="text-xs uppercase tracking-wider text-slate-400 mb-2">Start Page</span>
+    <div class="flex flex-col items-center gap-3">
+      <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Start Page</span>
       <div @click="openPreview(startPage)"
-        class="w-[100px] h-[140px] bg-slate-700 rounded-lg overflow-hidden border border-white/10 shadow-lg relative group cursor-pointer hover:ring-2 hover:ring-purple-500/50 transition-all"
+        class="w-[120px] aspect-[1/1.4] bg-muted rounded-md overflow-hidden border border-input shadow-sm relative group cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
         title="Click to zoom">
-        <canvas ref="startCanvas" class="w-full h-full object-contain pointer-events-none"></canvas>
+        <canvas ref="startCanvas" class="w-full h-full object-contain pointer-events-none bg-white"></canvas>
         <div
-          class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-          <svg v-if="pdfDoc" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-            stroke="currentColor"
-            class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
-          </svg>
+          class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
+          <ZoomIn class="w-6 h-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </div>
-      <span class="text-sm font-semibold mt-2 text-slate-200">Page {{ startPage }}</span>
+      <span class="text-sm font-medium text-foreground bg-muted px-2 py-0.5 rounded">Page {{ startPage }}</span>
     </div>
 
     <!-- Separator -->
-    <div class="text-slate-600">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-        class="w-6 h-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
-      </svg>
+    <div class="text-muted-foreground/30">
+      <ArrowRight class="w-6 h-6" />
     </div>
 
     <!-- End Page -->
-    <div class="flex flex-col items-center">
-      <span class="text-xs uppercase tracking-wider text-slate-400 mb-2">End Page</span>
+    <div class="flex flex-col items-center gap-3">
+      <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">End Page</span>
       <div @click="openPreview(endPage)"
-        class="w-[100px] h-[140px] bg-slate-700 rounded-lg overflow-hidden border border-white/10 shadow-lg relative group cursor-pointer hover:ring-2 hover:ring-purple-500/50 transition-all"
+        class="w-[120px] aspect-[1/1.4] bg-muted rounded-md overflow-hidden border border-input shadow-sm relative group cursor-pointer hover:ring-2 hover:ring-primary/20 transition-all"
         title="Click to zoom">
-        <canvas ref="endCanvas" class="w-full h-full object-contain pointer-events-none"></canvas>
+        <canvas ref="endCanvas" class="w-full h-full object-contain pointer-events-none bg-white"></canvas>
         <div
-          class="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-          <svg v-if="pdfDoc" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-            stroke="currentColor"
-            class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-md">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
-          </svg>
+          class="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
+          <ZoomIn class="w-6 h-6 text-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </div>
-      <span class="text-sm font-semibold mt-2 text-slate-200">Page {{ endPage }}</span>
+      <span class="text-sm font-medium text-foreground bg-muted px-2 py-0.5 rounded">Page {{ endPage }}</span>
     </div>
 
     <!-- Modal -->
     <Teleport to="body">
       <Transition name="fade">
         <div v-if="showModal"
-          class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-8"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4 md:p-8"
           @click="closeModal">
-          <div class="relative max-h-full max-w-full overflow-auto bg-transparent flex items-center justify-center"
+          <div class="relative max-h-full max-w-full overflow-hidden flex flex-col items-center justify-center"
             @click.stop>
-            <button @click="closeModal"
-              class="absolute -top-12 right-0 md:fixed md:top-8 md:right-8 text-white/70 hover:text-white bg-black/50 hover:bg-black/70 rounded-full p-2 transition-all z-50">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor" class="w-8 h-8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <canvas ref="modalCanvas"
-              class="rounded shadow-2xl max-w-full max-h-[90vh] object-contain bg-white"></canvas>
+            <div class="absolute top-4 right-4 z-50">
+              <button @click="closeModal"
+                class="rounded-full bg-background/90 p-2 text-foreground hover:bg-muted transition-colors border shadow-sm">
+                <X class="w-5 h-5" />
+              </button>
+            </div>
+            <div class="bg-card p-2 rounded-lg border shadow-lg overflow-auto max-h-[85vh] max-w-[90vw]">
+              <canvas ref="modalCanvas" class="max-w-full h-auto object-contain bg-white rounded"></canvas>
+            </div>
           </div>
         </div>
       </Transition>
@@ -163,7 +146,7 @@ defineExpose({
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .fade-enter-from,

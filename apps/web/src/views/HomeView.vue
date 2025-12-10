@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { PDFDocument } from 'pdf-lib'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
+import { FileText, Download, RefreshCw, Scissors, Check, Settings2, LayoutGrid, List } from 'lucide-vue-next'
 import DropZone from '../components/DropZone.vue'
 import FileInfo from '../components/FileInfo.vue'
 import ProgressBar from '../components/ProgressBar.vue'
@@ -162,123 +163,150 @@ const startOver = () => {
 </script>
 
 <template>
-    <div class="w-full px-4 py-8 transition-all duration-300" :class="[file ? 'max-w-6xl' : 'max-w-2xl']">
-        <header class="text-center mb-10 animate-fade-in-down">
-            <h1 class="text-5xl font-bold mb-3 tracking-tight title-gradient">PDF Splitter</h1>
-            <p class="text-slate-400 text-lg">Instantly separate your PDF into individual pages</p>
+    <div
+        class="min-h-screen bg-background text-foreground flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8 transition-all duration-300">
+        <header class="text-center mb-12 animate-fade-in-down max-w-2xl">
+            <h1 class="text-4xl font-extrabold tracking-tight lg:text-5xl mb-4">PDF Splitter</h1>
+            <p class="text-muted-foreground text-lg">Instantly separate your PDF into individual pages with privacy and
+                ease.</p>
         </header>
 
-        <main class="glass p-8 md:p-10 relative">
+        <main class="w-full relative" :class="[file ? 'max-w-7xl' : 'max-w-xl']">
             <!-- Upload State -->
             <div v-if="!file" class="animate-fade-in">
                 <DropZone v-model="file" @file-dropped="handleFileDropped" />
             </div>
 
             <!-- Config State -->
-            <div v-else class="animate-fade-in">
-                <!-- Controls (Hidden during processing/result) -->
-                <div v-if="!processing && !showResult" class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div v-else class="animate-fade-in rounded-xl border bg-card text-card-foreground shadow-sm">
 
-                    <!-- LEFT COLUMN: Controls -->
-                    <div class="space-y-6 flex flex-col justify-center">
-                        <FileInfo :file="file" @remove="removeFile" />
+                <div class="p-6 md:p-8">
+                    <!-- Controls (Hidden during processing/result) -->
+                    <div v-if="!processing && !showResult" class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
 
-                        <div class="space-y-4">
-                            <h3 class="text-slate-300 font-semibold uppercase tracking-wider text-sm">Split Mode</h3>
-                            <div class="flex flex-col gap-3">
-                                <label
-                                    class="flex items-center gap-3 cursor-pointer group p-3 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
-                                    <input type="radio" v-model="splitMode" value="all"
-                                        class="w-5 h-5 accent-purple-500 cursor-pointer" />
-                                    <div class="flex flex-col">
-                                        <span class="text-slate-200 font-medium">All Pages</span>
-                                        <span class="text-xs text-slate-400">Extract every page into a separate
-                                            file</span>
-                                    </div>
-                                </label>
+                        <!-- LEFT COLUMN: Controls -->
+                        <div class="lg:col-span-5 space-y-8 flex flex-col">
+                            <FileInfo :file="file" @remove="removeFile" />
 
-                                <label
-                                    class="flex items-center gap-3 cursor-pointer group p-3 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
-                                    <input type="radio" v-model="splitMode" value="range"
-                                        class="w-5 h-5 accent-purple-500 cursor-pointer" />
-                                    <div class="flex flex-col">
-                                        <span class="text-slate-200 font-medium">Custom Range</span>
-                                        <span class="text-xs text-slate-400">Extract specific page ranges (e.g. 1-5,
-                                            8)</span>
-                                    </div>
-                                </label>
-
-                                <div v-if="splitMode === 'range'" class="animate-slide-down ml-8">
-                                    <input v-model="rangeInput" type="text" placeholder="e.g. 1-5, 8, 11-13"
-                                        class="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-purple-500/50 transition-all font-mono text-sm" />
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-2 pb-2 border-b">
+                                    <Settings2 class="w-5 h-5 text-primary" />
+                                    <h3 class="font-semibold text-lg">Split Mode</h3>
                                 </div>
 
-                                <label
-                                    class="flex items-center gap-3 cursor-pointer group p-3 rounded-lg border border-white/5 bg-white/5 hover:bg-white/10 transition-colors">
-                                    <input type="radio" v-model="splitMode" value="select"
-                                        class="w-5 h-5 accent-purple-500 cursor-pointer" />
-                                    <div class="flex flex-col">
-                                        <span class="text-slate-200 font-medium">Select Manually</span>
-                                        <span class="text-xs text-slate-400">Pick pages visually from the grid</span>
+                                <div class="grid gap-4">
+                                    <!-- All Pages -->
+                                    <div class="relative items-start flex gap-3 p-4 rounded-lg border transition-all cursor-pointer hover:bg-accent/50"
+                                        :class="splitMode === 'all' ? 'border-primary ring-1 ring-primary bg-accent/20' : 'border-input'"
+                                        @click="splitMode = 'all'">
+                                        <div class="mt-0.5">
+                                            <input type="radio" v-model="splitMode" value="all" class="sr-only" />
+                                            <List class="w-5 h-5"
+                                                :class="splitMode === 'all' ? 'text-primary' : 'text-muted-foreground'" />
+                                        </div>
+                                        <div class="space-y-1">
+                                            <p class="font-medium leading-none">All Pages</p>
+                                            <p class="text-sm text-muted-foreground">Extract every single page into a
+                                                separate file.</p>
+                                        </div>
                                     </div>
-                                </label>
+
+                                    <!-- Custom Range -->
+                                    <div class="relative items-start flex gap-3 p-4 rounded-lg border transition-all cursor-pointer hover:bg-accent/50"
+                                        :class="splitMode === 'range' ? 'border-primary ring-1 ring-primary bg-accent/20' : 'border-input'"
+                                        @click="splitMode = 'range'">
+                                        <div class="mt-0.5">
+                                            <input type="radio" v-model="splitMode" value="range" class="sr-only" />
+                                            <Scissors class="w-5 h-5"
+                                                :class="splitMode === 'range' ? 'text-primary' : 'text-muted-foreground'" />
+                                        </div>
+                                        <div class="space-y-2 w-full">
+                                            <div class="space-y-1">
+                                                <p class="font-medium leading-none">Custom Range</p>
+                                                <p class="text-sm text-muted-foreground">Extract specific ranges (e.g.
+                                                    1-5, 8).</p>
+                                            </div>
+                                            <div v-if="splitMode === 'range'"
+                                                class="animate-accordion-down overflow-hidden">
+                                                <input v-model="rangeInput" type="text" placeholder="e.g. 1-5, 8, 11-13"
+                                                    class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                                    @click.stop />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Select Manually -->
+                                    <div class="relative items-start flex gap-3 p-4 rounded-lg border transition-all cursor-pointer hover:bg-accent/50"
+                                        :class="splitMode === 'select' ? 'border-primary ring-1 ring-primary bg-accent/20' : 'border-input'"
+                                        @click="splitMode = 'select'">
+                                        <div class="mt-0.5">
+                                            <input type="radio" v-model="splitMode" value="select" class="sr-only" />
+                                            <LayoutGrid class="w-5 h-5"
+                                                :class="splitMode === 'select' ? 'text-primary' : 'text-muted-foreground'" />
+                                        </div>
+                                        <div class="space-y-1">
+                                            <p class="font-medium leading-none">Select Manually</p>
+                                            <p class="text-sm text-muted-foreground">Pick pages visually from the grid.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <button @click="processPDF"
+                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-11 px-8 w-full bg-primary text-primary-foreground hover:bg-primary/90 mt-4 shadow-md">
+                                Split PDF
+                            </button>
                         </div>
 
-                        <button @click="processPDF"
-                            class="w-full py-4 mt-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-bold text-lg text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 relative overflow-hidden group">
-                            <span class="relative z-10">Split PDF</span>
-                            <div
-                                class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                            </div>
-                        </button>
-                    </div>
+                        <!-- RIGHT COLUMN: Preview -->
+                        <div class="lg:col-span-7 flex flex-col h-full bg-muted/30 rounded-xl border p-6 min-h-[500px]">
+                            <h3
+                                class="font-semibold text-lg mb-6 flex items-center gap-2 text-muted-foreground uppercase tracking-wider text-xs">
+                                <FileText class="w-4 h-4" /> Preview
+                            </h3>
 
-                    <!-- RIGHT COLUMN: Preview -->
-                    <div
-                        class="flex flex-col h-full bg-black/20 rounded-2xl border border-white/5 p-6 animate-fade-in min-h-[400px]">
-                        <h3 class="text-slate-300 font-semibold uppercase tracking-wider text-sm mb-4">Preview</h3>
-
-                        <div class="flex-grow flex items-center justify-center">
-                            <div v-if="splitMode !== 'select'" class="w-full">
-                                <PdfPreview v-if="file" :file="file" :start-page="startPage" :end-page="endPage" />
-                            </div>
-                            <div v-else class="w-full h-full flex flex-col">
-                                <PageGrid v-if="file" :file="file" v-model="selectedPages" class="flex-grow" />
+                            <div class="flex-grow flex items-center justify-center w-full">
+                                <div v-if="splitMode !== 'select'" class="w-full flex justify-center">
+                                    <PdfPreview v-if="file" :file="file" :start-page="startPage" :end-page="endPage" />
+                                </div>
+                                <div v-else class="w-full h-full flex flex-col">
+                                    <PageGrid v-if="file" :file="file" v-model="selectedPages" class="flex-grow" />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Processing State -->
-                <div v-if="processing" class="py-8 animate-fade-in">
-                    <ProgressBar :progress="progress" :text="progressText" />
-                </div>
-
-                <!-- Result State -->
-                <div v-if="showResult" class="py-6 text-center animate-fade-in">
-                    <div class="inline-flex p-4 rounded-full bg-green-500/20 text-green-400 mb-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor" class="w-8 h-8">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                        </svg>
+                    <!-- Processing State -->
+                    <div v-if="processing" class="py-12 animate-fade-in max-w-lg mx-auto">
+                        <ProgressBar :progress="progress" :text="progressText" />
                     </div>
-                    <h3 class="text-2xl font-bold text-white mb-6">Ready for Download!</h3>
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button @click="downloadZip"
-                            class="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all">
-                            Download ZIP
-                        </button>
-                        <button @click="startOver"
-                            class="px-8 py-3 bg-transparent border-2 border-purple-500/50 text-purple-400 rounded-xl font-semibold hover:bg-purple-500/10 transition-all">
-                            Split Again
-                        </button>
+
+                    <!-- Result State -->
+                    <div v-if="showResult" class="py-12 text-center animate-fade-in flex flex-col items-center">
+                        <div
+                            class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center mb-6">
+                            <Check class="w-8 h-8" />
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2">Ready for Download!</h3>
+                        <p class="text-muted-foreground mb-8">Your PDF pages have been successfully split.</p>
+
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button @click="downloadZip"
+                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-8 bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm gap-2">
+                                <Download class="w-4 h-4" /> Download ZIP
+                            </button>
+                            <button @click="startOver"
+                                class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 h-10 px-8 border border-input bg-background hover:bg-accent hover:text-accent-foreground gap-2">
+                                <RefreshCw class="w-4 h-4" /> Split Again
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </main>
 
-        <footer class="text-center mt-8 text-slate-500 text-sm">
+        <footer class="mt-12 text-center text-sm text-muted-foreground">
             <p>Private & Secure. Client-side processing.</p>
         </footer>
     </div>
