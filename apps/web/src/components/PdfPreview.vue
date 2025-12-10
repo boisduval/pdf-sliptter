@@ -2,8 +2,10 @@
 import { onMounted, watch, ref, nextTick } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
 
+import pdfWorker from 'pdfjs-dist/build/pdf.worker?url'
+
 // Set worker src dynamically
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker
 
 const props = defineProps({
   file: File,

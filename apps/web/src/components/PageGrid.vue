@@ -2,9 +2,11 @@
 import { ref, shallowRef, onMounted, watch, nextTick, onBeforeUnmount } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
 
+import pdfWorker from 'pdfjs-dist/build/pdf.worker?url'
+
 // Worker src is already set globally in App or PdfPreview, but good to ensure.
 // We assume it's set or we set it again to be safe.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker
 
 const props = defineProps({
     file: File,
