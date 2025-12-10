@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --primary-gradient: linear-gradient(45deg, #3b82f6, #8b5cf6);
+}
+
+body {
+  @apply bg-slate-900 text-slate-50 font-sans min-h-screen flex items-center justify-center m-0;
+  background: var(--bg-gradient);
+}
+
+.glass {
+  @apply backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl transition-all duration-300;
+  background: var(--card-bg);
+}
+
+.title-gradient {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}

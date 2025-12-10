@@ -1,0 +1,19 @@
+{
+    "version": "0.2",
+    "language": "en",
+    "words": [
+        "tailwindcss",
+        "vite",
+        "pinia",
+        "vueuse",
+        "headlessui",
+        "file-saver",
+        "jszip",
+        "pdf-lib",
+        "pdfjs",
+        "publint",
+        "stylelint",
+        "changesets",
+        "lonely-planet"
+    ]
+}
