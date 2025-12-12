@@ -35,7 +35,10 @@ const messages = {
       rangePlaceholder: 'e.g. 1-5, 8, 11-13',
       mergeLabel: 'Merge selected pages into one PDF file',
       splitBtn: 'Split PDF',
-      mergeBtn: 'Merge & Download'
+      mergeBtn: 'Merge & Download',
+      selectAll: 'Select All',
+      deselectAll: 'Deselect All',
+      invertSelect: 'Invert'
     },
     preview: {
       title: 'Preview',
@@ -93,7 +96,10 @@ const messages = {
       rangePlaceholder: '例如 1-5, 8, 11-13',
       mergeLabel: '将选中的页面合并为一个 PDF 文件',
       splitBtn: '拆分 PDF',
-      mergeBtn: '合并并下载'
+      mergeBtn: '合并并下载',
+      selectAll: '全选',
+      deselectAll: '取消全选',
+      invertSelect: '反选'
     },
     preview: {
       title: '预览',

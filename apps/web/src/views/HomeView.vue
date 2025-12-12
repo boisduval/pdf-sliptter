@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { PDFDocument } from 'pdf-lib'
 import JSZip from 'jszip'
@@ -90,6 +90,7 @@ const parseRangeForPreview = () => {
             endPage.value = pages[pages.length - 1]
         }
     } catch (e) {
+        console.error('Invalid page range:', e)
     }
 }
 
@@ -204,6 +205,39 @@ const startOver = () => {
     showResult.value = false
     resultFile.value = null
 }
+
+const selectAll = () => {
+    if (!totalPages.value) return
+    selectedPages.value = Array.from({ length: totalPages.value }, (_, i) => i + 1)
+}
+
+const deselectAll = () => {
+    selectedPages.value = []
+}
+
+const invertSelection = () => {
+    if (!totalPages.value) return
+    const currentSet = new Set(selectedPages.value)
+    const newSelection = []
+    for (let i = 1; i <= totalPages.value; i++) {
+        if (!currentSet.has(i)) {
+            newSelection.push(i)
+        }
+    }
+    selectedPages.value = newSelection
+}
+
+const isAllSelected = computed(() => totalPages.value > 0 && selectedPages.value.length === totalPages.value)
+const isIndeterminate = computed(() => selectedPages.value.length > 0 && selectedPages.value.length < totalPages.value)
+
+const toggleSelectAll = () => {
+    if (isAllSelected.value) {
+        deselectAll()
+    } else {
+        selectAll()
+    }
+}
+
 </script>
 
 <template>
@@ -275,7 +309,7 @@ const startOver = () => {
                                         <div class="space-y-2 w-full">
                                             <div class="space-y-1">
                                                 <p class="font-medium leading-none">{{ $t('sidebar.modes.range.title')
-                                                }}</p>
+                                                    }}</p>
                                                 <p class="text-sm text-muted-foreground">{{
                                                     $t('sidebar.modes.range.desc') }}</p>
                                             </div>
@@ -298,11 +332,15 @@ const startOver = () => {
                                             <LayoutGrid class="w-5 h-5"
                                                 :class="splitMode === 'select' ? 'text-primary' : 'text-muted-foreground'" />
                                         </div>
-                                        <div class="space-y-1">
-                                            <p class="font-medium leading-none">{{ $t('sidebar.modes.select.title') }}
-                                            </p>
-                                            <p class="text-sm text-muted-foreground">{{ $t('sidebar.modes.select.desc')
-                                            }}</p>
+                                        <div class="space-y-2 w-full">
+                                            <div class="space-y-1">
+                                                <p class="font-medium leading-none">{{ $t('sidebar.modes.select.title')
+                                                    }}
+                                                </p>
+                                                <p class="text-sm text-muted-foreground">{{
+                                                    $t('sidebar.modes.select.desc')
+                                                    }}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -325,10 +363,25 @@ const startOver = () => {
 
                         <!-- RIGHT COLUMN: Preview -->
                         <div class="lg:col-span-7 flex flex-col h-full bg-muted/30 rounded-xl border p-6 min-h-[500px]">
-                            <h3
-                                class="font-semibold text-lg mb-6 flex items-center gap-2 text-muted-foreground uppercase tracking-wider text-xs">
-                                <FileText class="w-4 h-4" /> {{ $t('preview.title') }}
-                            </h3>
+                            <div class="flex items-center justify-between mb-6">
+                                <h3
+                                    class="font-semibold text-lg flex items-center gap-2 text-muted-foreground uppercase tracking-wider text-xs">
+                                    <FileText class="w-4 h-4" /> {{ $t('preview.title') }}
+                                </h3>
+                                <div v-if="splitMode === 'select'" class="flex items-center gap-4 animate-fade-in">
+                                    <label
+                                        class="flex items-center gap-2 cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground transition-colors select-none">
+                                        <input type="checkbox" :checked="isAllSelected" :indeterminate="isIndeterminate"
+                                            @change="toggleSelectAll"
+                                            class="rounded border-input bg-background/50 text-primary w-4 h-4 focus:ring-primary/20 transition-all cursor-pointer" />
+                                        {{ $t('sidebar.selectAll') }}
+                                    </label>
+                                    <button @click="invertSelection"
+                                        class="text-xs px-2 py-1.5 rounded-md border bg-background hover:bg-accent hover:text-accent-foreground transition-colors">
+                                        {{ $t('sidebar.invertSelect') }}
+                                    </button>
+                                </div>
+                            </div>
 
                             <div class="flex-grow flex items-center justify-center w-full">
                                 <div v-show="splitMode !== 'select'" class="w-full flex justify-center">
