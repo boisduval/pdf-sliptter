@@ -22,7 +22,10 @@ const formattedSize = computed(() => {
 </script>
 
 <template>
-  <div v-if="file" class="flex items-center justify-between p-4 bg-muted/40 rounded-lg border animate-slide-down group">
+  <div
+    v-if="file"
+    class="flex items-center justify-between p-4 bg-muted/40 rounded-lg border animate-slide-down group"
+  >
     <div class="flex items-center gap-3 overflow-hidden">
       <div class="p-2 bg-background rounded-md border shadow-sm">
         <FileIcon class="w-5 h-5 text-primary" />
@@ -32,9 +35,12 @@ const formattedSize = computed(() => {
         <span class="text-xs text-muted-foreground">{{ formattedSize }}</span>
       </div>
     </div>
-    <button v-if="canRemove" @click.stop="$emit('remove')"
+    <button
+      v-if="canRemove"
+      @click.stop="$emit('remove')"
       class="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
-      :title="t('fileInfo.remove')">
+      :title="t('fileInfo.remove')"
+    >
       <X class="w-4 h-4" />
     </button>
   </div>
