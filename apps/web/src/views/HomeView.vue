@@ -59,6 +59,11 @@ const toggleLanguage = () => {
   localStorage.setItem('user-locale', newLocale)
 }
 
+const switchTab = (tab) => {
+  activeTab.value = tab
+  resetState()
+}
+
 const handleFileDropped = (f) => {
   file.value = f
   resetState()
@@ -340,23 +345,27 @@ const toggleSelectAll = () => {
       <div class="flex items-center gap-3">
         <!-- Mode Switcher Tabs -->
         <div class="flex p-1 bg-muted rounded-xl border shadow-inner">
-          <button @click="
-            activeTab = 'watermark'
-          resetState()
-            " class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all" :class="activeTab === 'watermark'
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-              ">
+          <button
+            @click="switchTab('watermark')"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+            :class="
+              activeTab === 'watermark'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            "
+          >
             <Stamp class="w-4 h-4 text-primary" />
             {{ $t('nav.watermark') }}
           </button>
-          <button @click="
-            activeTab = 'split'
-          resetState()
-            " class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all" :class="activeTab === 'split'
-              ? 'bg-background text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-              ">
+          <button
+            @click="switchTab('split')"
+            class="flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all"
+            :class="
+              activeTab === 'split'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            "
+          >
             <Scissors class="w-4 h-4 text-primary" />
             {{ $t('nav.split') }}
           </button>
